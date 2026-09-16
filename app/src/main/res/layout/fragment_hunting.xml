@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0A0E14"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- TITLE -->
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="HUNTING"
+            android:textColor="#00E5FF"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <!-- REGION -->
+
+        <TextView
+            android:id="@+id/tvRegionLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="SELECT REGION"
+            android:textColor="#8FA3B8"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/spinnerRegions"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp" />
+
+        <!-- COMBAT AREA -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:background="#111923"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- CREATURE IMAGE -->
+
+            <ImageView
+                android:id="@+id/ivCreature"
+                android:layout_width="match_parent"
+                android:layout_height="240dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="Creature"
+                android:scaleType="centerInside"
+                android:visibility="gone" />
+
+            <!-- CREATURE NAME -->
+
+            <TextView
+                android:id="@+id/tvCreature"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:text="No creature"
+                android:textColor="#FFFFFF"
+                android:textSize="23sp"
+                android:textStyle="bold" />
+
+            <!-- ENEMY LABEL -->
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="ENEMY HP"
+                android:textColor="#8FA3B8"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <!-- ENEMY HP -->
+
+            <ProgressBar
+                android:id="@+id/progressEnemyHp"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="12dp"
+                android:layout_marginTop="6dp"
+                android:max="100"
+                android:progress="0" />
+
+            <!-- PLAYER LABEL -->
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="PLAYER HP"
+                android:textColor="#8FA3B8"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <!-- PLAYER HP -->
+
+            <ProgressBar
+                android:id="@+id/progressPlayerHp"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="12dp"
+                android:layout_marginTop="6dp"
+                android:max="100"
+                android:progress="100" />
+
+        </LinearLayout>
+
+        <!-- STATUS -->
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:text="Choose a region and start hunting."
+            android:textColor="#FFFFFF"
+            android:textSize="15sp" />
+
+        <!-- HUNT -->
+
+        <Button
+            android:id="@+id/btnHunt"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="20dp"
+            android:text="HUNT"
+            android:textStyle="bold" />
+
+        <!-- ATTACK -->
+
+        <Button
+            android:id="@+id/btnAttack"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:enabled="false"
+            android:text="ATTACK"
+            android:textStyle="bold" />
+
+        <!-- RETURN -->
+
+        <Button
+            android:id="@+id/btnReturnRestaurant"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:text="RETURN TO RESTAURANT"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</ScrollView>
+

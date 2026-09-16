@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_restaurant"
+        android:icon="@drawable/restaurant"
+        android:title="Restaurant" />
+
+    <item
+        android:id="@+id/nav_inventory"
+        android:icon="@drawable/inventory"
+        android:title="Inventory" />
+
+    <item
+        android:id="@+id/nav_crafting"
+        android:icon="@drawable/crafting"
+        android:title="Crafting" />
+
+    <item
+        android:id="@+id/nav_bestiary"
+        android:icon="@drawable/bestiary"
+        android:title="Bestiary" />
+
+    <item
+        android:id="@+id/nav_hunting"
+        android:icon="@drawable/hunting"
+        android:title="Hunt" />
+
+</menu>

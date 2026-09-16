@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/mainMenuFragment">
+
+    <fragment
+        android:id="@+id/mainMenuFragment"
+        android:name="com.example.cyberharvest2300.ui.mainmenu.MainMenuFragment"
+        android:label="Main Menu">
+
+        <action
+            android:id="@+id/action_mainMenuFragment_to_characterCreationFragment"
+            app:destination="@id/characterCreationFragment" />
+
+        <action
+            android:id="@+id/action_mainMenuFragment_to_hubFragment"
+            app:destination="@id/hubFragment"
+            app:popUpTo="@id/mainMenuFragment"
+            app:popUpToInclusive="true" />
+
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/characterCreationFragment"
+        android:name="com.example.cyberharvest2300.ui.character.CharacterCreationFragment"
+        android:label="Character Creation">
+
+        <action
+            android:id="@+id/action_characterCreationFragment_to_loreFragment"
+            app:destination="@id/loreFragment" />
+
+        <argument
+            android:name="characterName"
+            app:argType="string" />
+
+        <argument
+            android:name="restaurantName"
+            app:argType="string" />
+
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/loreFragment"
+        android:name="com.example.cyberharvest2300.ui.character.LoreFragment"
+        android:label="Lore">
+
+        <action
+            android:id="@+id/action_loreFragment_to_classSelectionFragment"
+            app:destination="@id/classSelectionFragment" />
+
+        <argument
+            android:name="characterName"
+            app:argType="string" />
+
+        <argument
+            android:name="restaurantName"
+            app:argType="string" />
+
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/classSelectionFragment"
+        android:name="com.example.cyberharvest2300.ui.character.ClassSelectionFragment"
+        android:label="Class Selection">
+
+        <action
+            android:id="@+id/action_classSelectionFragment_to_tutorialFragment"
+            app:destination="@id/tutorialFragment" />
+
+        <argument
+            android:name="characterName"
+            app:argType="string" />
+
+        <argument
+            android:name="restaurantName"
+            app:argType="string" />
+
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/tutorialFragment"
+        android:name="com.example.cyberharvest2300.ui.tutorial.TutorialFragment"
+        android:label="Tutorial">
+
+        <action
+            android:id="@+id/action_tutorialFragment_to_hubFragment"
+            app:destination="@id/hubFragment"
+            app:popUpTo="@id/mainMenuFragment"
+            app:popUpToInclusive="true" />
+
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/hubFragment"
+        android:name="com.example.cyberharvest2300.ui.hub.HubFragment"
+        android:label="Hub" />
+
+</navigation>
