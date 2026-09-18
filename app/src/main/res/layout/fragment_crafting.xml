@@ -4,7 +4,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0E14"
+    android:background="@color/ch_background"
     android:fillViewport="true">
 
     <LinearLayout
@@ -18,7 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="CRAFTING"
-            android:textColor="#00E5FF"
+            android:textColor="@color/ch_accent_cyan"
             android:textSize="28sp"
             android:textStyle="bold" />
 
@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="28dp"
             android:text="Craft weapons, equip them and upgrade their combat power."
-            android:textColor="#FFFFFF"
+            android:textColor="@color/ch_text_primary"
             android:textSize="17sp" />
 
         <Button

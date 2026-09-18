@@ -1,25 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<ScrollView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/ch_background"
+    android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/weaponContainer"
+    <TextView
+        android:id="@+id/tvTitle"
+        android:fontFamily="@font/russo_one"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="20dp"
+        android:text="WEAPON UPGRADES"
+        android:textColor="@color/ch_text_primary"
+        android:textSize="22sp"
+        android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/tvTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="WEAPON UPGRADES"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvWeapons"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp"
+        tools:listitem="@layout/item_weapon_card" />
 
-    </LinearLayout>
-
-</ScrollView>
+</LinearLayout>

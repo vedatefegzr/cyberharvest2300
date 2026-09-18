@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0E14"
+    android:background="@color/ch_background"
     android:fillViewport="true">
 
     <LinearLayout
@@ -17,24 +17,25 @@
 
         <TextView
             android:id="@+id/tvTitle"
+            android:fontFamily="@font/russo_one"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:text="RESTAURANT"
-            android:textColor="#00E5FF"
+            android:textColor="@color/ch_accent_cyan"
             android:textSize="28sp"
-            android:textStyle="bold"
-            android:gravity="center" />
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tvStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
+            android:gravity="center"
             android:text="OPEN — DAY"
-            android:textColor="#00FF88"
+            android:textColor="@color/ch_accent_green"
             android:textSize="13sp"
-            android:textStyle="bold"
-            android:gravity="center" />
+            android:textStyle="bold" />
 
         <!-- PLAYER -->
 
@@ -43,10 +44,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
+            android:gravity="center"
             android:text="Day 1    Money: 0 ₡    Reputation: 0"
-            android:textColor="#FFD740"
-            android:textSize="15sp"
-            android:gravity="center" />
+            android:textColor="@color/ch_accent_yellow"
+            android:textSize="15sp" />
 
         <!-- RECIPES -->
 
@@ -55,35 +56,46 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="28dp"
             android:text="RECIPES"
-            android:textColor="#00E5FF"
+            android:textColor="@color/ch_accent_cyan"
             android:textSize="20sp"
             android:textStyle="bold" />
 
-        <LinearLayout
-            android:id="@+id/recipeContainer"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvRecipes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:orientation="vertical" />
+            android:nestedScrollingEnabled="false"
+            tools:listitem="@layout/item_recipe_card" />
+
+        <TextView
+            android:id="@+id/tvNoRecipes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/recipe_none_unlocked"
+            android:textColor="@color/ch_text_secondary"
+            android:textSize="16sp"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/tvSelectedRecipe"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
+            android:gravity="center"
             android:text="SELECTED: None"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/ch_text_primary"
             android:textSize="16sp"
-            android:textStyle="bold"
-            android:gravity="center" />
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/btnCook"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:text="COOK SELECTED"
-            android:enabled="false" />
+            android:enabled="false"
+            android:text="COOK SELECTED" />
 
         <!-- PREPARED FOOD -->
 
@@ -92,7 +104,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="28dp"
             android:text="PREPARED FOOD"
-            android:textColor="#00E5FF"
+            android:textColor="@color/ch_accent_cyan"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -102,7 +114,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:text="No prepared food."
-            android:textColor="#00FF88"
+            android:textColor="@color/ch_accent_green"
             android:textSize="16sp" />
 
         <!-- INFO -->
@@ -112,10 +124,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
+            android:gravity="center"
             android:text="Restaurant ready."
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:gravity="center" />
+            android:textColor="@color/ch_text_primary"
+            android:textSize="16sp" />
 
         <!-- CUSTOMER -->
 
@@ -124,7 +136,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="28dp"
             android:text="CUSTOMER"
-            android:textColor="#00E5FF"
+            android:textColor="@color/ch_accent_cyan"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -133,10 +145,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
+            android:gravity="center"
             android:text="No active order."
-            android:textColor="#FFFFFF"
-            android:textSize="17sp"
-            android:gravity="center" />
+            android:textColor="@color/ch_text_primary"
+            android:textSize="17sp" />
 
         <Button
             android:id="@+id/btnNewCustomer"
@@ -150,8 +162,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="SERVE"
-            android:enabled="false" />
+            android:enabled="false"
+            android:text="SERVE" />
 
         <!-- REWARD -->
 
@@ -160,20 +172,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:gravity="center"
             android:text="Last reward: 0 ₡"
-            android:textColor="#00FF88"
-            android:textSize="15sp"
-            android:gravity="center" />
+            android:textColor="@color/ch_accent_green"
+            android:textSize="15sp" />
 
         <TextView
             android:id="@+id/tvReputationReward"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
+            android:gravity="center"
             android:text="Last reputation: +0"
-            android:textColor="#FFD740"
-            android:textSize="15sp"
-            android:gravity="center" />
+            android:textColor="@color/ch_accent_yellow"
+            android:textSize="15sp" />
 
         <!-- CLOSE -->
 

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="weapon_not_owned">SAHİP DEĞİLSİN</string>
+    <string name="weapon_level_attack">Seviye %1$d · Saldırı %2$d</string>
+
+    <string name="badge_owned">SAHİP</string>
+    <string name="badge_max">MAKS</string>
+    <string name="max_level_reached">MAKSİMUM SEVİYE</string>
+
+    <string name="craft_cost_title">ÜRETİM MALİYETİ</string>
+    <string name="upgrade_cost_title">YÜKSELTME MALİYETİ</string>
+    <string name="cost_line_format">%1$s: %2$d / %3$d</string>
+
+    <string name="action_craft">ÜRET</string>
+    <string name="action_equip">KUŞAN</string>
+    <string name="action_equipped">KUŞANILDI</string>
+    <string name="action_upgrade_to">SEV. %1$d YÜKSELT</string>
+
+    <string name="req_reputation">Gerekli İtibar: %1$d</string>
+    <string name="req_money">Gerekli Para: %1$d₡</string>
+    <string name="req_restaurant_level">Gerekli Restoran Seviyesi: %1$d</string>
+    <string name="req_kills">Gerekli Avlanma Sayısı: %1$d</string>
+    <string name="req_weapon_level">Gerekli Silah Seviyesi: %1$d</string>
+
+</resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="recipe_none_unlocked">HİÇ TARİF AÇILMADI</string>
+    <string name="recipe_selected_name">▶ %1$s</string>
+    <string name="recipe_ingredients_prefix">Malzemeler: </string>
+    <string name="recipe_sell_format">Satış: %1$d ₡</string>
+    <string name="recipe_select">SEÇ</string>
+    <string name="recipe_selected">SEÇİLDİ</string>
+</resources>

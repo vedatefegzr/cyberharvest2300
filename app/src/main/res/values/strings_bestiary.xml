@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="bestiary_undiscovered">BİLİNMEYEN YARATIK\nKeşfetmek için bu yaratıkla karşılaş.</string>
+    <string name="bestiary_combat_locked">Savaş verisini görmek için bu yaratığı öldür.</string>
+    <string name="bestiary_loot_title">GANİMET</string>
+    <string name="bestiary_loot_locked">Ganimet verisi kilitli. %1$d avlanma daha gerekli.</string>
+
+    <string name="bestiary_stat_line">Karşılaşma: %1$d\nBölge: %2$s\nAvlanma: %3$d</string>
+    <string name="bestiary_combat_line">Can: %1$d\nSaldırı: %2$d\nZayıflık: %3$s\nDirenç: %4$s</string>
+    <string name="bestiary_none">Yok</string>
+    <string name="bestiary_loot_line_format">%1$s — %%%2$s</string>
+
+</resources>

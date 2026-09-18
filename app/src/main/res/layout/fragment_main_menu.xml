@@ -5,14 +5,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0E14">
+    android:background="@color/ch_background">
 
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="CYBER-HARVEST"
-        android:textColor="#00E5FF"
+        android:textColor="@color/ch_accent_cyan"
         android:textSize="32sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@id/tvSubtitle"
@@ -27,7 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="2300"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/ch_text_primary"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -4,7 +4,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0E14"
+    android:background="@color/ch_background"
     android:fillViewport="true">
 
     <LinearLayout
@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="HUNTING"
-            android:textColor="#00E5FF"
+            android:textColor="@color/ch_accent_cyan"
             android:textSize="28sp"
             android:textStyle="bold" />
 
@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="SELECT REGION"
-            android:textColor="#8FA3B8"
+            android:textColor="@color/ch_text_secondary"
             android:textSize="13sp"
             android:textStyle="bold" />
 
@@ -48,7 +48,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:background="#111923"
+            android:background="@color/ch_surface_panel"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -72,7 +72,7 @@
                 android:layout_marginTop="12dp"
                 android:gravity="center"
                 android:text="No creature"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/ch_text_primary"
                 android:textSize="23sp"
                 android:textStyle="bold" />
 
@@ -83,7 +83,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
                 android:text="ENEMY HP"
-                android:textColor="#8FA3B8"
+                android:textColor="@color/ch_text_secondary"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
@@ -105,7 +105,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="PLAYER HP"
-                android:textColor="#8FA3B8"
+                android:textColor="@color/ch_text_secondary"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
@@ -131,7 +131,7 @@
             android:layout_marginTop="20dp"
             android:gravity="center"
             android:text="Choose a region and start hunting."
-            android:textColor="#FFFFFF"
+            android:textColor="@color/ch_text_primary"
             android:textSize="15sp" />
 
         <!-- HUNT -->
@@ -168,4 +168,3 @@
     </LinearLayout>
 
 </ScrollView>
-

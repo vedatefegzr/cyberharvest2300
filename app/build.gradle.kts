@@ -72,7 +72,7 @@ dependencies {
     implementation(
         "androidx.navigation:navigation-ui-ktx:2.9.3"
     )
-
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)

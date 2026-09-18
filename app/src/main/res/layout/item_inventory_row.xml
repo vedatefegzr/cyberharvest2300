@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    app:cardBackgroundColor="@color/ch_surface"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="2dp"
+    app:strokeColor="@color/ch_cyan_glow_soft"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <ImageView
+            android:id="@+id/ivItemIcon"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_icon_glow_cyan"
+            android:contentDescription="@null"
+            android:padding="8dp"
+            android:scaleType="centerInside"
+            tools:src="@drawable/scrap" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvItemName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/russo_one"
+                android:textColor="@color/ch_text_primary"
+                android:textSize="14sp"
+                tools:text="Scrap ×12" />
+
+            <TextView
+                android:id="@+id/tvItemMeta"
+                android:fontFamily="@font/font_space_mono"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="@color/ch_text_secondary"
+                android:textSize="12sp"
+                tools:text="CRAFTING_MATERIAL · COMMON" />
+
+            <TextView
+                android:id="@+id/tvSecuredBadge"
+                android:fontFamily="@font/font_space_mono"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/inventory_secured"
+                android:textColor="@color/ch_accent_yellow"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSell"
+            style="@style/Widget.CyberHarvest.Button.Outlined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:textSize="12sp"
+            tools:text="SAT\n+10₡" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

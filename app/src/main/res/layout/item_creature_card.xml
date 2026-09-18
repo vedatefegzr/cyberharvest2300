@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="@color/ch_surface"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
+    app:strokeColor="@color/ch_green_glow_strong"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Yaratık görseli (keşfedilmemişse silüet/karartılmış görünür) -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="160dp">
+
+            <ImageView
+                android:id="@+id/ivCreature"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_art_glow_green"
+                android:contentDescription="@null"
+                android:padding="24dp"
+                android:scaleType="fitCenter"
+                tools:src="@drawable/cyber_rat_meat" />
+
+            <TextView
+                android:id="@+id/tvUnknownOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@color/ch_surface_panel"
+                android:gravity="center"
+                android:text="?"
+                android:textColor="@color/ch_text_muted"
+                android:textSize="48sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/tvCreatureName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/russo_one"
+                android:textColor="@color/ch_text_primary"
+                android:textSize="19sp"
+                tools:text="Cyber Rat" />
+
+            <!-- Hiç karşılaşılmamış: sadece kısa açıklama -->
+            <TextView
+                android:id="@+id/tvUndiscovered"
+                android:fontFamily="@font/font_space_mono"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/bestiary_undiscovered"
+                android:textColor="@color/ch_text_secondary"
+                android:textSize="14sp"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <!-- Karşılaşıldı: temel istatistikler -->
+            <TextView
+                android:id="@+id/tvBasicStats"
+                android:fontFamily="@font/font_space_mono"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ch_text_secondary"
+                android:textSize="14sp"
+                android:visibility="gone"
+                tools:text="Karşılaşma: 3\nBölge: NEON_FIELDS\nAvlanma: 0"
+                tools:visibility="visible" />
+
+            <!-- Hiç öldürülmemiş: savaş verisi kilitli -->
+            <TextView
+                android:id="@+id/tvCombatLocked"
+                android:fontFamily="@font/font_space_mono"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/bestiary_combat_locked"
+                android:textColor="@color/ch_text_muted"
+                android:textSize="14sp"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <!-- Öldürüldü: savaş verisi -->
+            <TextView
+                android:id="@+id/tvCombatStats"
+                android:fontFamily="@font/font_space_mono"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:lineSpacingExtra="3dp"
+                android:textColor="@color/ch_accent_cyan"
+                android:textSize="14sp"
+                android:visibility="gone"
+                tools:text="Can: 30\nSaldırı: 5\nZayıflık: THERMAL\nDirenç: -"
+                tools:visibility="visible" />
+
+            <!-- Loot: 3 öldürmeden önce kilitli -->
+            <TextView
+                android:id="@+id/tvLootLocked"
+                android:fontFamily="@font/font_space_mono"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/ch_text_muted"
+                android:textSize="13sp"
+                android:visibility="gone"
+                tools:text="Ganimet verisi kilitli. 2 avlanma daha gerekli."
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/tvLootTitle"
+                android:fontFamily="@font/font_space_mono"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:letterSpacing="0.05"
+                android:text="@string/bestiary_loot_title"
+                android:textColor="@color/ch_text_muted"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/tvLootList"
+                android:fontFamily="@font/font_space_mono"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:lineSpacingExtra="2dp"
+                android:textColor="@color/ch_text_secondary"
+                android:textSize="13sp"
+                android:visibility="gone"
+                tools:text="Scrap — 60%\nDamaged Circuit — 12%"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

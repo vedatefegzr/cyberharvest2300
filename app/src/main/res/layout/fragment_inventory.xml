@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0E14">
+    android:background="@color/ch_background">
 
     <TextView
         android:id="@+id/tvTitle"
+        android:fontFamily="@font/russo_one"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
         android:text="INVENTORY"
-        android:textColor="#00E5FF"
+        android:textColor="@color/ch_accent_cyan"
         android:textSize="28sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -26,40 +27,34 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="MONEY: 0 ₡"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/ch_text_primary"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvTitle" />
 
-    <ScrollView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvInventory"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="30dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="20dp"
-        android:fillViewport="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:clipToPadding="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvMoney">
-
-        <LinearLayout
-            android:id="@+id/inventoryContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
-
-    </ScrollView>
+        app:layout_constraintTop_toBottomOf="@id/tvMoney"
+        tools:listitem="@layout/item_inventory_row" />
 
     <TextView
         android:id="@+id/tvEmpty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Inventory is empty."
-        android:textColor="#FFFFFF"
+        android:text="@string/inventory_empty"
+        android:textColor="@color/ch_text_primary"
         android:textSize="18sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -68,4 +63,3 @@
         app:layout_constraintTop_toBottomOf="@id/tvMoney" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-
