@@ -1,4 +1,3 @@
-
 package com.example.cyberharvest2300.domain.restaurant
 
 import com.example.cyberharvest2300.data.local.entity.PlayerProfile
@@ -53,18 +52,30 @@ class RestaurantProgressionEngine(
         // =====================================================
         // CUSTOMER CAPACITY
         // =====================================================
+        // perkIds verilirse (PlayerProfile.restaurantPerkIds),
+        // PERK_CAPACITY seçimlerinden gelen ek kapasite de
+        // hesaba katılır.
 
         fun getCustomerCapacity(
-            level: Int
+            level: Int,
+            perkIds: String = ""
         ): Int {
 
-            return when {
-                level <= 2 -> 1
-                level <= 4 -> 2
-                level <= 6 -> 3
-                level <= 8 -> 4
-                else -> 5
-            }
+            val baseCapacity =
+                when {
+                    level <= 2 -> 1
+                    level <= 4 -> 2
+                    level <= 6 -> 3
+                    level <= 8 -> 4
+                    else -> 5
+                }
+
+            val perkBonus =
+                RestaurantPerks
+                    .parse(perkIds)
+                    .sumOf { it.extraCapacity }
+
+            return baseCapacity + perkBonus
         }
 
         // =====================================================
@@ -107,10 +118,25 @@ class RestaurantProgressionEngine(
         val newLevel =
             calculateLevel(newXp)
 
+        val leveledUp =
+            newLevel > oldLevel
+
         val updatedPlayer =
             player.copy(
                 restaurantXp = newXp,
-                restaurantLevel = newLevel
+                restaurantLevel = newLevel,
+
+                /*
+                 * Seviye atlandıysa oyuncuya bir perk seçimi
+                 * borçlanılır. UI, pendingPerkChoice == true
+                 * gördüğünde perk seçim ekranını göstermeli;
+                 * choosePerk() çağrılana kadar bu true kalır
+                 * (art arda birden fazla level atlanırsa bile
+                 * tek bir bekleyen seçim yeterlidir - istersen
+                 * bunu bir sayaca çevirebilirsin).
+                 */
+                pendingPerkChoice =
+                    player.pendingPerkChoice || leveledUp
             )
 
         playerProfileRepository
@@ -120,10 +146,56 @@ class RestaurantProgressionEngine(
 
         return RestaurantProgressionResult(
             profile = updatedPlayer,
-            leveledUp = newLevel > oldLevel,
+            leveledUp = leveledUp,
             oldLevel = oldLevel,
             newLevel = newLevel
         )
+    }
+
+    /*
+     * Oyuncu level-up sonrası sunulan perk'lerden birini seçtiğinde
+     * çağrılır. Perk id restaurantPerkIds listesine eklenir ve
+     * bekleyen seçim bayrağı kapatılır.
+     */
+    suspend fun choosePerk(
+        perkId: String
+    ): PlayerProfile? {
+
+        val perk =
+            RestaurantPerks.getById(perkId)
+                ?: return null
+
+        val player =
+            playerProfileRepository
+                .getPlayerProfile()
+                .first()
+                ?: return null
+
+        if (!player.pendingPerkChoice) {
+            return player
+        }
+
+        val currentIds =
+            player.restaurantPerkIds
+                .split(",")
+                .filter { it.isNotBlank() }
+
+        val updatedIds =
+            (currentIds + perk.id)
+                .joinToString(",")
+
+        val updatedPlayer =
+            player.copy(
+                restaurantPerkIds = updatedIds,
+                pendingPerkChoice = false
+            )
+
+        playerProfileRepository
+            .updatePlayerProfile(
+                updatedPlayer
+            )
+
+        return updatedPlayer
     }
 
     private fun calculateLevel(

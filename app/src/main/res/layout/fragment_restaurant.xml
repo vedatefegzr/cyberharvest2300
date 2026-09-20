@@ -97,6 +97,14 @@
             android:enabled="false"
             android:text="COOK SELECTED" />
 
+        <Button
+            android:id="@+id/btnBuyIngredients"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:enabled="false"
+            android:text="BUY MISSING INGREDIENTS" />
+
         <!-- PREPARED FOOD -->
 
         <TextView

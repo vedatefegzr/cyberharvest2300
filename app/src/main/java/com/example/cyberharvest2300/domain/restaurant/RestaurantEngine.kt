@@ -1,7 +1,7 @@
-
 package com.example.cyberharvest2300.domain.restaurant
 
 import com.example.cyberharvest2300.data.game.GameTime
+import com.example.cyberharvest2300.data.game.ItemData
 import com.example.cyberharvest2300.data.game.Recipe
 import com.example.cyberharvest2300.data.game.RecipeData
 import com.example.cyberharvest2300.data.game.RestaurantData
@@ -11,6 +11,9 @@ import com.example.cyberharvest2300.data.repository.CustomerProgressRepository
 import com.example.cyberharvest2300.data.repository.DailyOrderRepository
 import com.example.cyberharvest2300.data.repository.InventoryRepository
 import com.example.cyberharvest2300.data.repository.PlayerProfileRepository
+import com.example.cyberharvest2300.domain.achievement.Achievement
+import com.example.cyberharvest2300.domain.achievement.AchievementChecker
+import com.example.cyberharvest2300.domain.game.GameOverChecker
 import com.example.cyberharvest2300.domain.unlock.UnlockConditionChecker
 import kotlinx.coroutines.flow.first
 
@@ -26,7 +29,16 @@ data class ServeResult(
     val moneyEarned: Int = 0,
     val reputationEarned: Int = 0,
     val restaurantXpEarned: Int = 0,
-    val restaurantLeveledUp: Boolean = false
+    val restaurantLeveledUp: Boolean = false,
+    val newlyUnlockedAchievements: List<Achievement> = emptyList()
+)
+
+data class BuyIngredientResult(
+    val success: Boolean,
+    val message: String,
+    val itemId: String? = null,
+    val quantity: Int = 0,
+    val totalCost: Int = 0
 )
 
 class RestaurantEngine(
@@ -37,6 +49,14 @@ class RestaurantEngine(
     private val customerProgressRepository: CustomerProgressRepository,
     private val restaurantProgressionEngine: RestaurantProgressionEngine
 ) {
+
+    // Restoran tarafında sadece restoran/gün/para tabanlı achievement'lar
+    // kontrol edilir (kill sayısı bu engine'in erişebildiği bir veri değil,
+    // onlar HuntingEngine.finishVictory() içinde kontrol edilir).
+    private val achievementChecker =
+        AchievementChecker(
+            playerProfileRepository = playerProfileRepository
+        )
 
     suspend fun getAvailableRecipes(): List<Recipe> {
 
@@ -71,6 +91,13 @@ class RestaurantEngine(
                     false,
                     "Player profile not found."
                 )
+
+        if (player.isGameOver) {
+            return CookResult(
+                false,
+                "Oyun bitti."
+            )
+        }
 
         if (player.timePhase != GameTime.DAY) {
             return CookResult(
@@ -194,6 +221,10 @@ class RestaurantEngine(
                 .first()
                 ?: return null
 
+        if (player.isGameOver) {
+            return null
+        }
+
         if (player.timePhase != GameTime.DAY) {
             return null
         }
@@ -205,7 +236,8 @@ class RestaurantEngine(
         val customerCapacity =
             RestaurantProgressionEngine
                 .getCustomerCapacity(
-                    player.restaurantLevel
+                    level = player.restaurantLevel,
+                    perkIds = player.restaurantPerkIds
                 )
 
         val activeOrders =
@@ -310,6 +342,13 @@ class RestaurantEngine(
                     "Player profile not found."
                 )
 
+        if (player.isGameOver) {
+            return ServeResult(
+                false,
+                "Oyun bitti."
+            )
+        }
+
         if (player.timePhase != GameTime.DAY) {
             return ServeResult(
                 false,
@@ -365,14 +404,31 @@ class RestaurantEngine(
             )
         }
 
+        val activePerks =
+            RestaurantPerks.parse(
+                player.restaurantPerkIds
+            )
+
+        val reputationBonusPercent =
+            activePerks.sumOf {
+                it.reputationBonusPercent
+            }
+
         val moneyReward =
             recipe.sellPrice
 
-        val reputationReward =
+        val baseReputationReward =
             savedOrder.reputationReward
 
-        playerProfileRepository
-            .updatePlayerProfile(
+        val reputationReward =
+            baseReputationReward +
+                    (
+                            baseReputationReward *
+                                    reputationBonusPercent / 100f
+                            ).toInt()
+
+        val updatedPlayer =
+            GameOverChecker.evaluate(
                 player.copy(
                     money =
                         player.money +
@@ -382,6 +438,11 @@ class RestaurantEngine(
                         player.reputation +
                                 reputationReward
                 )
+            )
+
+        playerProfileRepository
+            .updatePlayerProfile(
+                updatedPlayer
             )
 
         dailyOrderRepository.saveOrder(
@@ -402,10 +463,21 @@ class RestaurantEngine(
         val xpReward = 20
 
         val progressionResult =
-            restaurantProgressionEngine
-                .addRestaurantXp(
-                    xpReward
-                )
+            if (!updatedPlayer.isGameOver) {
+                restaurantProgressionEngine
+                    .addRestaurantXp(
+                        xpReward
+                    )
+            } else {
+                null
+            }
+
+        val newlyUnlocked =
+            if (!updatedPlayer.isGameOver) {
+                achievementChecker.checkAndUnlock()
+            } else {
+                emptyList()
+            }
 
         return ServeResult(
             success = true,
@@ -423,7 +495,133 @@ class RestaurantEngine(
                 xpReward,
 
             restaurantLeveledUp =
-                progressionResult?.leveledUp == true
+                progressionResult?.leveledUp == true,
+
+            newlyUnlockedAchievements =
+                newlyUnlocked
         )
+    }
+
+    /*
+     * =========================================================
+     * MALZEME SATIN ALMA
+     * =========================================================
+     *
+     * Paranın gerçek bir harcama noktası olması için eklendi.
+     * Eksik pişirme malzemesini avlanmayı beklemeden,
+     * parayla satın alabiliyorsun.
+     *
+     * Fiyat = ItemData.sellValue * BUY_PRICE_MULTIPLIER
+     * (satış fiyatının üstüne standart bir kar marjı),
+     * PERK_SUPPLIER seçildiyse bu fiyat üzerinden ek indirim uygulanır.
+     */
+    suspend fun buyIngredient(
+        itemId: String,
+        quantity: Int
+    ): BuyIngredientResult {
+
+        if (quantity <= 0) {
+            return BuyIngredientResult(
+                success = false,
+                message = "Geçersiz miktar."
+            )
+        }
+
+        val player =
+            playerProfileRepository
+                .getPlayerProfile()
+                .first()
+                ?: return BuyIngredientResult(
+                    success = false,
+                    message = "Player profile bulunamadı."
+                )
+
+        if (player.isGameOver) {
+            return BuyIngredientResult(
+                success = false,
+                message = "Oyun bitti."
+            )
+        }
+
+        if (player.timePhase != GameTime.DAY) {
+            return BuyIngredientResult(
+                success = false,
+                message = "Restaurant is closed at night."
+            )
+        }
+
+        val item =
+            ItemData.getById(itemId)
+                ?: return BuyIngredientResult(
+                    success = false,
+                    message = "Item not found."
+                )
+
+        val activePerks =
+            RestaurantPerks.parse(
+                player.restaurantPerkIds
+            )
+
+        val discountPercent =
+            activePerks
+                .sumOf { it.priceDiscountPercent }
+                .coerceAtMost(70) // aşırı indirim yığılmasını sınırla
+
+        val basePrice =
+            item.sellValue * BUY_PRICE_MULTIPLIER
+
+        val discountedPrice =
+            basePrice * (1f - discountPercent / 100f)
+
+        val unitPrice =
+            discountedPrice
+                .toInt()
+                .coerceAtLeast(1)
+
+        val totalCost =
+            unitPrice * quantity
+
+        if (player.money < totalCost) {
+            return BuyIngredientResult(
+                success = false,
+                message = "Yeterli paran yok."
+            )
+        }
+
+        val updatedPlayer =
+            GameOverChecker.evaluate(
+                player.copy(
+                    money =
+                        player.money - totalCost
+                )
+            )
+
+        playerProfileRepository
+            .updatePlayerProfile(
+                updatedPlayer
+            )
+
+        inventoryRepository.addItem(
+            itemId = itemId,
+            quantity = quantity
+        )
+
+        return BuyIngredientResult(
+            success = true,
+            message =
+                "${item.name} x$quantity satın alındı.",
+            itemId = itemId,
+            quantity = quantity,
+            totalCost = totalCost
+        )
+    }
+
+    companion object {
+
+        // Satın alma fiyatı, satış fiyatının kaç katı olsun.
+        // 2.0f -> 1.8f: PERK_SUPPLIER ile birlikte oynanınca
+        // fiyatlar çok agresif hissettiriyordu (bkz. ekonomi
+        // dengeleme notları). Playtest sonrası tekrar ayarla.
+        private const val BUY_PRICE_MULTIPLIER = 1.8f
     }
 }

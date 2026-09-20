@@ -29,7 +29,12 @@ import com.example.cyberharvest2300.data.local.entity.RegionState
         DailyOrder::class,
         CustomerProgress::class
     ],
-    version = 11,
+    // NOT: PlayerProfile'a yeni alanlar eklendi (isGameOver, gameOverReason,
+    // pendingPerkChoice, restaurantPerkIds, unlockedAchievementIds).
+    // fallbackToDestructiveMigration() kullanıldığı için versiyon artışı
+    // mevcut kayıtlı oyunu SIFIRLAR (kasıtlı - proper migration yazmak
+    // istersen bunu bir Migration nesnesiyle değiştir).
+    version = 12,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

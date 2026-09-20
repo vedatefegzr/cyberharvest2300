@@ -10,10 +10,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.example.cyberharvest2300.R
 import com.example.cyberharvest2300.data.local.AppDatabase
 import com.example.cyberharvest2300.data.repository.PlayerProfileRepository
 import com.example.cyberharvest2300.databinding.FragmentHubBinding
+import com.example.cyberharvest2300.domain.game.GameOverReason
 import com.example.cyberharvest2300.ui.bestiary.BestiaryFragment
 import com.example.cyberharvest2300.ui.crafting.CraftingFragment
 import com.example.cyberharvest2300.ui.hunting.HuntingFragment
@@ -32,6 +34,13 @@ class HubFragment : Fragment() {
 
     private lateinit var dayCycleViewModel:
             DayCycleViewModel
+
+    // HubFragment kendi ViewModel'i olmadan doğrudan repository'ye
+    // bakıyor (diğer ekranlarda olduğu gibi bir ViewModel'e sarmak
+    // istersen PlayerProfileViewModel'i genişletebilirsin; burada
+    // ekstra bir katman açmadan en basit yolu seçtim).
+    private lateinit var playerProfileRepository:
+            PlayerProfileRepository
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,7 +70,9 @@ class HubFragment : Fragment() {
 
         setupDayCycleViewModel()
         setupBottomNavigation()
+        setupGameOverOverlay()
         observeDayCycle()
+        observeGameOver()
 
         if (savedInstanceState == null) {
             openRestaurant()
@@ -75,7 +86,7 @@ class HubFragment : Fragment() {
                 requireContext()
             )
 
-        val playerProfileRepository =
+        playerProfileRepository =
             PlayerProfileRepository(
                 database.playerProfileDao()
             )
@@ -206,6 +217,100 @@ class HubFragment : Fragment() {
     }
 
     /*
+     * =========================================================
+     * GAME OVER
+     * =========================================================
+     * PlayerProfile.isGameOver true olduğu an tetiklenir.
+     * Hub'ın tamamını (bottom nav dahil) karartan bir overlay
+     * gösterir; altındaki hiçbir view'a tıklanamaz
+     * (overlay clickable=true olduğu için touch event'leri yutar).
+     */
+    private fun setupGameOverOverlay() {
+
+        binding.btnGameOverRestart
+            .setOnClickListener {
+
+                restartGame()
+            }
+    }
+
+    private fun observeGameOver() {
+
+        viewLifecycleOwner.lifecycleScope.launch {
+
+            viewLifecycleOwner.repeatOnLifecycle(
+                Lifecycle.State.STARTED
+            ) {
+
+                playerProfileRepository
+                    .getPlayerProfile()
+                    .collect { profile ->
+
+                        val isGameOver =
+                            profile?.isGameOver == true
+
+                        binding.gameOverOverlay.visibility =
+                            if (isGameOver) View.VISIBLE else View.GONE
+
+                        if (isGameOver) {
+
+                            binding.tvGameOverReason.text =
+                                buildGameOverMessage(
+                                    profile?.gameOverReason
+                                )
+                        }
+                    }
+            }
+        }
+    }
+
+    private fun buildGameOverMessage(
+        reason: String?
+    ): String {
+
+        return when (reason) {
+
+            GameOverReason.DEATH ->
+                "Canın tükendi. Restoranın sahipsiz kaldı."
+
+            GameOverReason.BANKRUPTCY ->
+                "Ne paran ne de itibarın kaldı. Restoran iflas etti."
+
+            GameOverReason.REPUTATION_COLLAPSE ->
+                "İtibarın tamamen tükendi. Kimse senden bir şey almıyor."
+
+            else ->
+                "Restoranın kapandı."
+        }
+    }
+
+    /*
+     * nav_graph.xml'de hubFragment'tan mainMenuFragment'a giden bir
+     * action tanımlı değil (hubFragment leaf node), ama NavController
+     * hedef id'sine doğrudan navigate etmeyi destekliyor. Kayıtlı
+     * profili sildikten sonra Main Menu'ye dönüyoruz; orada
+     * "Continue" butonu (MainMenuFragment.checkSaveGame) otomatik
+     * olarak disabled olacak çünkü profil artık yok, "New Game" ile
+     * karaktere sıfırdan başlanabilir.
+     */
+    private fun restartGame() {
+
+        binding.btnGameOverRestart.isEnabled = false
+
+        viewLifecycleOwner.lifecycleScope.launch {
+
+            playerProfileRepository
+                .deletePlayerProfile()
+
+            if (!isAdded) return@launch
+
+            findNavController().navigate(
+                R.id.mainMenuFragment
+            )
+        }
+    }
+
+    /*
      * Her yeni Hub sekmesine geçerken
      * eski child back stack temizlenir.
      *
@@ -290,4 +395,3 @@ class HubFragment : Fragment() {
         _binding = null
     }
 }
-

@@ -9,8 +9,11 @@ import com.example.cyberharvest2300.data.repository.CreatureProgressRepository
 import com.example.cyberharvest2300.data.repository.InventoryRepository
 import com.example.cyberharvest2300.data.repository.PlayerProfileRepository
 import com.example.cyberharvest2300.data.repository.WeaponProgressRepository
+import com.example.cyberharvest2300.domain.achievement.Achievement
+import com.example.cyberharvest2300.domain.achievement.AchievementChecker
 import com.example.cyberharvest2300.domain.combat.CombatEngine
 import com.example.cyberharvest2300.domain.combat.CombatResult
+import com.example.cyberharvest2300.domain.game.GameOverChecker
 import com.example.cyberharvest2300.domain.loot.LootCalculator
 import com.example.cyberharvest2300.domain.loot.LootResult
 import kotlinx.coroutines.flow.first
@@ -23,7 +26,8 @@ data class HuntResult(
 
 data class HuntVictoryResult(
     val creature: Creature,
-    val loot: List<LootResult>
+    val loot: List<LootResult>,
+    val newlyUnlockedAchievements: List<Achievement> = emptyList()
 )
 
 class HuntingEngine(
@@ -50,6 +54,14 @@ class HuntingEngine(
     private var combatEngine:
             CombatEngine? = null
 
+    // Kill sayısına bağlı achievement'lar burada kontrol edilir,
+    // çünkü CreatureProgressRepository'ye erişimi olan tek engine budur.
+    private val achievementChecker =
+        AchievementChecker(
+            playerProfileRepository = playerProfileRepository,
+            creatureProgressRepository = creatureProgressRepository
+        )
+
     suspend fun startHunt(
         regionId: String
     ): HuntResult {
@@ -62,6 +74,14 @@ class HuntingEngine(
                     success = false,
                     message = "Player profile bulunamadı."
                 )
+
+        if (player.isGameOver) {
+
+            return HuntResult(
+                success = false,
+                message = "Oyun bitti."
+            )
+        }
 
         if (player.timePhase != GameTime.NIGHT) {
 
@@ -350,38 +370,81 @@ class HuntingEngine(
                 .getPlayerProfile()
                 .first()
 
+        val playerLost =
+            result.combatEnded &&
+                    !result.playerWon
+
         if (player != null) {
+
+            /*
+             * Can her durumda result.playerHp'ye
+             * eşitlenir (savaş kaybedilse bile
+             * artık otomatik max'a doldurulmuyor,
+             * bkz. aşağıdaki not).
+             *
+             * Eğer savaş kaybedildiyse ayrıca
+             * ölüm cezası olarak:
+             *  - mevcut paranın %12'si düşer
+             *  - itibar 1 puan düşer
+             * İkisi de negatife düşmez.
+             *
+             * Not: Can burada 0'da bırakıldığı için
+             * startHunt() içindeki
+             * "player.health <= 0 -> yeni günü bekle"
+             * kontrolü artık gerçek bir karşılığa sahip
+             * olur: oyuncu aynı gece tekrar avlanamaz,
+             * canı ancak DayCycleEngine.startDay() ile
+             * yeni günde yenilenir.
+             *
+             * GameOverChecker.evaluate() burada can 0'a
+             * düştüğünde (DEATH) veya itibar tabana
+             * vurduğunda (REPUTATION_COLLAPSE) oyunu
+             * gerçekten bitirir - artık "hiçbir şey olmuyor"
+             * durumu kalmadı.
+             */
+
+            val moneyPenalty =
+                if (playerLost) {
+                    (player.money * MONEY_LOSS_ON_DEFEAT_RATIO)
+                        .toInt()
+                        .coerceAtMost(player.money)
+                } else {
+                    0
+                }
+
+            val reputationPenalty =
+                if (playerLost) {
+                    REPUTATION_LOSS_ON_DEFEAT
+                        .coerceAtMost(player.reputation)
+                } else {
+                    0
+                }
+
+            val updatedPlayer =
+                GameOverChecker.evaluate(
+                    player.copy(
+                        health =
+                            result.playerHp,
+                        money =
+                            (player.money - moneyPenalty)
+                                .coerceAtLeast(0),
+                        reputation =
+                            (player.reputation - reputationPenalty)
+                                .coerceAtLeast(0)
+                    )
+                )
 
             playerProfileRepository
                 .updatePlayerProfile(
-                    player.copy(
-                        health =
-                            result.playerHp
-                    )
+                    updatedPlayer
                 )
         }
 
-        if (
-            result.combatEnded &&
-            !result.playerWon
-        ) {
+        if (playerLost) {
 
             /*
              * Oyuncu öldüğünde mevcut av temizlenir.
-             * Oyuncu aynı gece tekrar avlanabilir.
-             * Yeni bir av için HP tekrar max'a alınır.
              */
-
-            if (player != null) {
-
-                playerProfileRepository
-                    .updatePlayerProfile(
-                        player.copy(
-                            health =
-                                player.maxHealth
-                        )
-                    )
-            }
 
             combatEngine = null
             currentCreature = null
@@ -422,9 +485,13 @@ class HuntingEngine(
         combatEngine = null
         currentCreature = null
 
+        val newlyUnlocked =
+            achievementChecker.checkAndUnlock()
+
         return HuntVictoryResult(
             creature = creature,
-            loot = loot
+            loot = loot,
+            newlyUnlockedAchievements = newlyUnlocked
         )
     }
 
@@ -502,5 +569,18 @@ class HuntingEngine(
         combatEngine = null
 
         currentCreature = null
+    }
+
+    companion object {
+
+        // Savaşı kaybedince mevcut paranın kaybedilecek oranı.
+        // 0.15f -> 0.12f: DEATH artık GameOverChecker ile gerçek bir
+        // sonuç doğuruyor, bu yüzden ayrıca ağır bir para cezası
+        // "iki kere cezalandırma" hissi yaratıyordu. Playtest sonrası
+        // tekrar ayarla.
+        private const val MONEY_LOSS_ON_DEFEAT_RATIO = 0.12f
+
+        // Savaşı kaybedince düşecek sabit itibar puanı.
+        private const val REPUTATION_LOSS_ON_DEFEAT = 1
     }
 }

@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -21,6 +22,7 @@ import com.example.cyberharvest2300.data.repository.PlayerProfileRepository
 import com.example.cyberharvest2300.data.repository.RegionRepository
 import com.example.cyberharvest2300.data.repository.WeaponProgressRepository
 import com.example.cyberharvest2300.databinding.FragmentHuntingBinding
+import com.example.cyberharvest2300.domain.achievement.Achievement
 import com.example.cyberharvest2300.domain.combat.CombatResult
 import com.example.cyberharvest2300.domain.hunting.HuntingEngine
 import com.example.cyberharvest2300.domain.loot.LootCalculator
@@ -464,6 +466,29 @@ class HuntingFragment : Fragment() {
                                 }
                         }
 
+                        /*
+                         * BUG FIX: regionStates (RegionRepository -> Room Flow)
+                         * yeni bir bölge kilidi açıldığında değişiyor, ama
+                         * "regions" (RegionData.all) hiçbir zaman değişmiyor -
+                         * statik bir liste. Spinner sadece yukarıdaki collect'e
+                         * bağlıydı, bu yüzden reputation/money şartı sağlansa
+                         * bile checkAndUnlockRegions() arka planda bölgeyi
+                         * DB'de açıyordu ama spinner hiç yenilenmiyordu.
+                         * regionStates'i de dinleyip aynı fonksiyonu tekrar
+                         * çağırarak bunu düzeltiyoruz.
+                         */
+                        launch {
+
+                            viewModel
+                                .regionStates
+                                .collect {
+
+                                    renderRegionSpinner(
+                                        viewModel.regions.value
+                                    )
+                                }
+                        }
+
                         launch {
 
                             viewModel
@@ -669,17 +694,27 @@ class HuntingFragment : Fragment() {
 
                                         } else {
 
+                                            val stillAlive =
+                                                viewModel
+                                                    .playerProfile
+                                                    .value
+                                                    ?.isGameOver != true
+
                                             binding.tvStatus.text =
-                                                "You were defeated.\n" +
-                                                        "Your HP has been restored."
+                                                if (stillAlive) {
+                                                    "You were defeated.\n" +
+                                                            "Your HP has been restored."
+                                                } else {
+                                                    "You were defeated."
+                                                }
 
                                             binding.btnHunt.isEnabled =
-                                                dayCycleViewModel
-                                                    .isNight()
+                                                stillAlive &&
+                                                        dayCycleViewModel.isNight()
 
                                             binding.btnReturnRestaurant.isEnabled =
-                                                dayCycleViewModel
-                                                    .isNight()
+                                                stillAlive &&
+                                                        dayCycleViewModel.isNight()
                                         }
 
                                     } else {
@@ -763,12 +798,36 @@ class HuntingFragment : Fragment() {
                                         dayCycleViewModel
                                             .isNight()
 
+                                    showAchievementToasts(
+                                        result.newlyUnlockedAchievements
+                                    )
+
                                     viewModel
                                         .clearVictoryResult()
                                 }
                         }
                     }
             }
+    }
+
+    /*
+     * =========================================================
+     * ACHIEVEMENT TOAST
+     * =========================================================
+     */
+    private fun showAchievementToasts(
+        achievements: List<Achievement>
+    ) {
+
+        if (!isAdded) return
+
+        achievements.forEach { achievement ->
+            Toast.makeText(
+                requireContext(),
+                "🏆 ${achievement.name} açıldı!",
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 
     private fun buildCombatMessage(
@@ -853,6 +912,27 @@ class HuntingFragment : Fragment() {
         binding.spinnerRegions
             .adapter =
             adapter
+
+        /*
+         * Adapter yeniden oluşturulduğunda Spinner varsayılan olarak
+         * 0. pozisyona (ilk öğe) sıfırlanır. Yeni bir bölge kilidi
+         * açıldığında (regionStates değiştiğinde) bu fonksiyon tekrar
+         * çağrıldığı için, oyuncunun o an seçili olan bölgesini
+         * kaybetmemesi için seçimi burada geri yüklüyoruz.
+         */
+        val currentSelection =
+            viewModel.selectedRegionId.value
+
+        val currentIndex =
+            regionIds.indexOf(currentSelection)
+
+        if (currentIndex >= 0) {
+
+            binding.spinnerRegions
+                .setSelection(
+                    currentIndex
+                )
+        }
 
         spinnerUpdating =
             false

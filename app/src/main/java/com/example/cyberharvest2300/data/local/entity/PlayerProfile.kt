@@ -33,5 +33,32 @@ data class PlayerProfile(
 
     val restaurantXp: Int = 0,
 
-    val timePhase: String = "DAY"
+    val timePhase: String = "DAY",
+
+    // =====================================================
+    // GAME OVER
+    // =====================================================
+    // isGameOver true olduğunda oyun akışı durur; UI bunu
+    // dinleyip bir Game Over ekranına yönlendirmeli.
+    // gameOverReason -> GameOverChecker.GameOverReason sabitlerinden biri.
+    val isGameOver: Boolean = false,
+
+    val gameOverReason: String = "NONE",
+
+    // =====================================================
+    // RESTAURANT LEVEL-UP PERK SEÇİMİ
+    // =====================================================
+    // Bir seviye atlandığında true olur; UI bir perk seçim
+    // ekranı göstermeli. Oyuncu seçim yapınca false'a döner.
+    val pendingPerkChoice: Boolean = false,
+
+    // Oyuncunun şu ana kadar seçtiği perk id'leri, virgülle ayrılmış.
+    // Örn: "PERK_CAPACITY,PERK_SUPPLIER"
+    val restaurantPerkIds: String = "",
+
+    // =====================================================
+    // ACHIEVEMENTS
+    // =====================================================
+    // Kilidi açılmış achievement id'leri, virgülle ayrılmış.
+    val unlockedAchievementIds: String = ""
 )

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -43,6 +44,9 @@ class RestaurantFragment : Fragment() {
     private lateinit var viewModel: RestaurantViewModel
     private lateinit var dayCycleViewModel: DayCycleViewModel
     private lateinit var recipeAdapter: RecipeAdapter
+
+    // Aynı anda birden fazla perk dialog'u açılmasını engellemek için.
+    private var perkDialogShown = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -108,6 +112,10 @@ class RestaurantFragment : Fragment() {
 
     private fun setupButtons() {
         binding.btnCook.setOnClickListener { viewModel.cookSelectedRecipe() }
+
+        binding.btnBuyIngredients.setOnClickListener {
+            viewModel.buyMissingIngredients()
+        }
 
         binding.btnNewCustomer.setOnClickListener { viewModel.createOrder() }
 
@@ -196,11 +204,70 @@ class RestaurantFragment : Fragment() {
                                     binding.tvRestaurantInfo.text = result.message + "\nRESTAURANT LEVEL UP!"
                                 }
                             }
+
+                            showAchievementToasts(
+                                result.newlyUnlockedAchievements
+                            )
+
                             viewModel.clearServeResult()
                         }
                     }
                 }
+
+                // Restoran seviye atladığında perk seçim dialog'unu gösterir.
+                launch {
+                    viewModel.pendingPerkChoice.collect { pending ->
+                        if (pending) {
+                            showPerkDialogIfNeeded()
+                        } else {
+                            perkDialogShown = false
+                        }
+                    }
+                }
             }
+        }
+    }
+
+    /*
+     * =========================================================
+     * PERK SEÇİM DİYALOĞU
+     * =========================================================
+     */
+    private fun showPerkDialogIfNeeded() {
+
+        if (perkDialogShown) return
+        if (!isAdded) return
+        if (childFragmentManager.findFragmentByTag(PERK_DIALOG_TAG) != null) return
+
+        perkDialogShown = true
+
+        val dialog = PerkChoiceDialogFragment(
+            perks = viewModel.availablePerks,
+            onPerkChosen = { perkId ->
+                viewModel.choosePerk(perkId)
+            }
+        )
+
+        dialog.show(childFragmentManager, PERK_DIALOG_TAG)
+    }
+
+    /*
+     * =========================================================
+     * ACHIEVEMENT TOAST
+     * =========================================================
+     */
+    private fun showAchievementToasts(
+        achievements: List<com.example.cyberharvest2300.domain.achievement.Achievement>
+    ) {
+
+        if (!isAdded) return
+
+        achievements.forEach { achievement ->
+            Toast.makeText(
+                requireContext(),
+                "🏆 ${achievement.name} açıldı!",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 
@@ -238,11 +305,13 @@ class RestaurantFragment : Fragment() {
         if (recipe == null) {
             binding.tvSelectedRecipe.text = "SELECTED: None"
             binding.btnCook.isEnabled = false
+            binding.btnBuyIngredients.isEnabled = false
             return
         }
 
         binding.tvSelectedRecipe.text = "SELECTED: ${recipe.name}"
         binding.btnCook.isEnabled = viewModel.isRestaurantOpen.value
+        binding.btnBuyIngredients.isEnabled = viewModel.isRestaurantOpen.value
     }
 
     private fun renderFoodInventory() {
@@ -273,16 +342,20 @@ class RestaurantFragment : Fragment() {
             return
         }
 
-        val capacity = RestaurantProgressionEngine.getCustomerCapacity(profile.restaurantLevel)
+        val capacity = RestaurantProgressionEngine.getCustomerCapacity(
+            level = profile.restaurantLevel,
+            perkIds = profile.restaurantPerkIds
+        )
 
         binding.tvPlayerStats.text =
             "Day ${profile.day}    Money: ${profile.money} ₡    Reputation: ${profile.reputation}\n" +
-                "Restaurant Lv.${profile.restaurantLevel}    XP: ${profile.restaurantXp}    Customers: $capacity"
+                    "Restaurant Lv.${profile.restaurantLevel}    XP: ${profile.restaurantXp}    Customers: $capacity"
     }
 
     private fun renderRestaurantState(isOpen: Boolean) {
         binding.tvStatus.text = if (isOpen) "OPEN — DAY" else "CLOSED — NIGHT"
         binding.btnCook.isEnabled = isOpen && viewModel.selectedRecipeId.value != null
+        binding.btnBuyIngredients.isEnabled = isOpen && viewModel.selectedRecipeId.value != null
         binding.btnNewCustomer.isEnabled = isOpen
         binding.btnCloseRestaurant.isEnabled = isOpen
         binding.btnServe.isEnabled = isOpen && viewModel.orders.value.isNotEmpty()
@@ -301,10 +374,10 @@ class RestaurantFragment : Fragment() {
 
         binding.tvOrder.text =
             "ACTIVE CUSTOMERS: ${orders.size}\n\n" +
-                "CUSTOMER\n\n${customer?.name ?: "Unknown"}\n\n" +
-                "Wants: ${recipe?.name ?: "Unknown"}\n\n" +
-                "Reward: ${firstOrder.reward} ₡\n" +
-                "Reputation: +${firstOrder.reputationReward}"
+                    "CUSTOMER\n\n${customer?.name ?: "Unknown"}\n\n" +
+                    "Wants: ${recipe?.name ?: "Unknown"}\n\n" +
+                    "Reward: ${firstOrder.reward} ₡\n" +
+                    "Reputation: +${firstOrder.reputationReward}"
 
         binding.btnServe.isEnabled = viewModel.isRestaurantOpen.value
     }
@@ -312,5 +385,9 @@ class RestaurantFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    companion object {
+        private const val PERK_DIALOG_TAG = "perk_choice_dialog"
     }
 }

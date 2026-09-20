@@ -13,6 +13,8 @@ import com.example.cyberharvest2300.data.repository.DailyOrderRepository
 import com.example.cyberharvest2300.data.repository.InventoryRepository
 import com.example.cyberharvest2300.data.repository.PlayerProfileRepository
 import com.example.cyberharvest2300.domain.restaurant.RestaurantEngine
+import com.example.cyberharvest2300.domain.restaurant.RestaurantPerk
+import com.example.cyberharvest2300.domain.restaurant.RestaurantPerks
 import com.example.cyberharvest2300.domain.restaurant.RestaurantProgressionEngine
 import com.example.cyberharvest2300.domain.restaurant.CookResult
 import com.example.cyberharvest2300.domain.restaurant.ServeResult
@@ -24,6 +26,7 @@ import kotlinx.coroutines.launch
 
 class RestaurantViewModel(
     private val engine: RestaurantEngine,
+    private val progressionEngine: RestaurantProgressionEngine,
     private val playerProfileRepository: PlayerProfileRepository,
     private val inventoryRepository: InventoryRepository
 ) : ViewModel() {
@@ -94,6 +97,23 @@ class RestaurantViewModel(
             StateFlow<Boolean> =
         _isRestaurantOpen.asStateFlow()
 
+    /*
+     * =========================================================
+     * PERK SEÇİMİ (restoran seviye atladığında)
+     * =========================================================
+     * Fragment, pendingPerkChoice == true olduğunda
+     * availablePerks listesini bir dialog/bottom-sheet olarak
+     * göstermeli, oyuncu seçince choosePerk(id) çağırmalı.
+     */
+    val pendingPerkChoice: StateFlow<Boolean>
+        get() = _pendingPerkChoice
+
+    private val _pendingPerkChoice =
+        MutableStateFlow(false)
+
+    val availablePerks: List<RestaurantPerk> =
+        RestaurantPerks.all
+
     init {
         observePlayerProfile()
         observeInventory()
@@ -114,6 +134,9 @@ class RestaurantViewModel(
 
                     _isRestaurantOpen.value =
                         profile?.timePhase == "DAY"
+
+                    _pendingPerkChoice.value =
+                        profile?.pendingPerkChoice == true
 
                     if (profile != null) {
                         loadOrders()
@@ -225,7 +248,10 @@ class RestaurantViewModel(
                     val capacity =
                         RestaurantProgressionEngine
                             .getCustomerCapacity(
-                                profile.restaurantLevel
+                                level =
+                                    profile.restaurantLevel,
+                                perkIds =
+                                    profile.restaurantPerkIds
                             )
 
                     val activeOrders =
@@ -283,6 +309,28 @@ class RestaurantViewModel(
         _serveResult.value = null
     }
 
+    /*
+     * Oyuncu perk seçim ekranından bir perk seçtiğinde çağrılır.
+     */
+    fun choosePerk(
+        perkId: String
+    ) {
+
+        viewModelScope.launch {
+
+            val updated =
+                progressionEngine.choosePerk(
+                    perkId
+                )
+
+            if (updated != null) {
+
+                _message.value =
+                    "${RestaurantPerks.getById(perkId)?.name ?: perkId} seçildi."
+            }
+        }
+    }
+
     fun getInventoryQuantity(
         itemId: String
     ): Int {
@@ -303,6 +351,79 @@ class RestaurantViewModel(
 
         return _recipes.value.find {
             it.id == recipeId
+        }
+    }
+
+    /*
+     * =========================================================
+     * EKSİK MALZEMELERİ SATIN AL
+     * =========================================================
+     *
+     * Seçili tarif için envanterde eksik olan her malzemeyi,
+     * RestaurantEngine.buyIngredient() üzerinden parayla
+     * tamamlar. Yeterli para yoksa ya da tarif seçili değilse
+     * kullanıcıya _message üzerinden bilgi verir.
+     */
+    fun buyMissingIngredients() {
+
+        val recipeId =
+            _selectedRecipeId.value
+                ?: run {
+                    _message.value =
+                        "Önce bir tarif seç."
+                    return
+                }
+
+        val recipe =
+            getRecipe(recipeId)
+                ?: return
+
+        viewModelScope.launch {
+
+            var totalSpent = 0
+            var boughtAnything = false
+
+            for (ingredient in recipe.ingredients) {
+
+                val have =
+                    getInventoryQuantity(
+                        ingredient.itemId
+                    )
+
+                val missing =
+                    ingredient.quantity - have
+
+                if (missing <= 0) {
+                    continue
+                }
+
+                val result =
+                    engine.buyIngredient(
+                        itemId =
+                            ingredient.itemId,
+
+                        quantity =
+                            missing
+                    )
+
+                if (!result.success) {
+
+                    _message.value =
+                        result.message
+
+                    return@launch
+                }
+
+                totalSpent += result.totalCost
+                boughtAnything = true
+            }
+
+            _message.value =
+                if (boughtAnything) {
+                    "Eksik malzemeler satın alındı (-$totalSpent ₡)."
+                } else {
+                    "Zaten yeterli malzemen var."
+                }
         }
     }
 
@@ -394,6 +515,9 @@ class RestaurantViewModelFactory(
             return RestaurantViewModel(
                 engine =
                     restaurantEngine,
+
+                progressionEngine =
+                    progressionEngine,
 
                 playerProfileRepository =
                     playerProfileRepository,
