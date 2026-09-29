@@ -28,6 +28,8 @@ import com.example.cyberharvest2300.databinding.FragmentRestaurantBinding
 import com.example.cyberharvest2300.domain.restaurant.RestaurantProgressionEngine
 import com.example.cyberharvest2300.domain.unlock.UnlockConditionChecker
 import com.example.cyberharvest2300.ui.hub.HubFragment
+import com.example.cyberharvest2300.ui.restaurant.adapter.OrderAdapter
+import com.example.cyberharvest2300.ui.restaurant.adapter.OrderCardUiModel
 import com.example.cyberharvest2300.ui.restaurant.adapter.RecipeAdapter
 import com.example.cyberharvest2300.ui.restaurant.adapter.RecipeCardUiModel
 import com.example.cyberharvest2300.viewmodel.DayCycleViewModel
@@ -44,6 +46,7 @@ class RestaurantFragment : Fragment() {
     private lateinit var viewModel: RestaurantViewModel
     private lateinit var dayCycleViewModel: DayCycleViewModel
     private lateinit var recipeAdapter: RecipeAdapter
+    private lateinit var orderAdapter: OrderAdapter
 
     // Aynı anda birden fazla perk dialog'u açılmasını engellemek için.
     private var perkDialogShown = false
@@ -63,6 +66,7 @@ class RestaurantFragment : Fragment() {
         setupViewModel()
         setupDayCycleViewModel()
         setupRecipeRecyclerView()
+        setupOrderRecyclerView()
         setupButtons()
         observeViewModel()
     }
@@ -110,6 +114,20 @@ class RestaurantFragment : Fragment() {
         binding.rvRecipes.adapter = recipeAdapter
     }
 
+    /*
+     * =========================================================
+     * ORDER QUEUE (ÇOKLU MÜŞTERİ)
+     * =========================================================
+     * PERK_CAPACITY seçildiğinde aynı anda 2-3 müşteri
+     * bekleyebiliyor; artık her biri kendi kartında, kendi
+     * "SERVİS ET" butonuyla listeleniyor.
+     */
+    private fun setupOrderRecyclerView() {
+        orderAdapter = OrderAdapter(onServe = { order -> viewModel.serveOrder(order) })
+        binding.rvOrders.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvOrders.adapter = orderAdapter
+    }
+
     private fun setupButtons() {
         binding.btnCook.setOnClickListener { viewModel.cookSelectedRecipe() }
 
@@ -118,11 +136,6 @@ class RestaurantFragment : Fragment() {
         }
 
         binding.btnNewCustomer.setOnClickListener { viewModel.createOrder() }
-
-        binding.btnServe.setOnClickListener {
-            val order = viewModel.orders.value.firstOrNull()
-            if (order != null) viewModel.serveOrder(order)
-        }
 
         binding.btnCloseRestaurant.setOnClickListener {
             if (!viewModel.isRestaurantOpen.value) return@setOnClickListener
@@ -357,29 +370,51 @@ class RestaurantFragment : Fragment() {
         binding.btnCook.isEnabled = isOpen && viewModel.selectedRecipeId.value != null
         binding.btnBuyIngredients.isEnabled = isOpen && viewModel.selectedRecipeId.value != null
         binding.btnNewCustomer.isEnabled = isOpen
+
+        // Sıradaki her sipariş kartının "SERVİS ET" butonu da restoran
+        // kapandığında devre dışı kalsın diye listeyi yeniden çiziyoruz.
+        renderOrders(viewModel.orders.value)
+
         binding.btnCloseRestaurant.isEnabled = isOpen
-        binding.btnServe.isEnabled = isOpen && viewModel.orders.value.isNotEmpty()
     }
 
+    /*
+     * =========================================================
+     * SİPARİŞ KUYRUĞU
+     * =========================================================
+     * Önceden sadece orders.first() gösteriliyordu; PERK_CAPACITY
+     * ile aynı anda 2-3 müşteri varken diğerleri hiç görünmüyordu.
+     * Artık tüm aktif siparişler RecyclerView'da listeleniyor,
+     * her biri kendi "SERVİS ET" butonuna sahip.
+     */
     private fun renderOrders(orders: List<RestaurantOrder>) {
+        if (_binding == null) return
+
         if (orders.isEmpty()) {
-            binding.tvOrder.text = "No active orders."
-            binding.btnServe.isEnabled = false
+            binding.rvOrders.visibility = View.GONE
+            binding.tvNoOrders.visibility = View.VISIBLE
             return
         }
 
-        val firstOrder = orders.first()
-        val customer = RestaurantData.getCustomer(firstOrder.customerId)
-        val recipe = viewModel.getRecipe(firstOrder.recipeId)
+        binding.rvOrders.visibility = View.VISIBLE
+        binding.tvNoOrders.visibility = View.GONE
 
-        binding.tvOrder.text =
-            "ACTIVE CUSTOMERS: ${orders.size}\n\n" +
-                    "CUSTOMER\n\n${customer?.name ?: "Unknown"}\n\n" +
-                    "Wants: ${recipe?.name ?: "Unknown"}\n\n" +
-                    "Reward: ${firstOrder.reward} ₡\n" +
-                    "Reputation: +${firstOrder.reputationReward}"
+        val isOpen = viewModel.isRestaurantOpen.value
 
-        binding.btnServe.isEnabled = viewModel.isRestaurantOpen.value
+        val items = orders.map { order ->
+
+            val customer = RestaurantData.getCustomer(order.customerId)
+            val recipe = viewModel.getRecipe(order.recipeId)
+
+            OrderCardUiModel(
+                order = order,
+                customerName = customer?.name ?: "Unknown",
+                recipeName = recipe?.name ?: "Unknown",
+                isServable = isOpen
+            )
+        }
+
+        orderAdapter.submitList(items)
     }
 
     override fun onDestroyView() {

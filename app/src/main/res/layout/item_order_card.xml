@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" app:cardCornerRadius="16dp" app:cardElevation="4dp" app:strokeColor="@color/ch_cyan_glow_strong" app:strokeWidth="1dp" tools:cardBackgroundColor="@color/ch_surface">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+        <TextView android:id="@+id/tvOrderCustomer" android:layout_width="match_parent" android:layout_height="wrap_content" android:fontFamily="@font/russo_one" android:textColor="@color/ch_accent_cyan" android:textSize="15sp" tools:text="Rusty Joe"/>
+        <TextView android:id="@+id/tvOrderWants" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:fontFamily="@font/font_space_mono" android:textColor="@color/ch_text_primary" android:textSize="14sp" tools:text="İstiyor: Basic Meat Stew"/>
+        <TextView android:id="@+id/tvOrderRewards" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:fontFamily="@font/font_space_mono" android:textColor="@color/ch_accent_green" android:textSize="13sp" tools:text="Ödül: 25 ₡ İtibar: +2"/>
+        <com.google.android.material.button.MaterialButton android:id="@+id/btnServeOrder" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/order_serve" android:textSize="13sp"/>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

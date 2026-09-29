@@ -13,8 +13,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.example.cyberharvest2300.data.game.Creature
+import com.example.cyberharvest2300.data.game.Element
 import com.example.cyberharvest2300.data.game.ItemData
 import com.example.cyberharvest2300.data.game.Region
+import com.example.cyberharvest2300.data.game.WeaponData
 import com.example.cyberharvest2300.data.local.AppDatabase
 import com.example.cyberharvest2300.data.repository.CreatureProgressRepository
 import com.example.cyberharvest2300.data.repository.InventoryRepository
@@ -49,6 +52,9 @@ class HuntingFragment : Fragment() {
     private lateinit var regionViewModel: RegionViewModel
 
     private lateinit var dayCycleViewModel: DayCycleViewModel
+
+    // Element ipucu için ekipli silahı sorgulamada kullanılır.
+    private lateinit var weaponProgressRepository: WeaponProgressRepository
 
     private var regionIds = emptyList<String>()
 
@@ -114,7 +120,7 @@ class HuntingFragment : Fragment() {
                 database.playerCreatureProgressDao()
             )
 
-        val weaponProgressRepository =
+        weaponProgressRepository =
             WeaponProgressRepository(
                 database.playerWeaponProgressDao()
             )
@@ -535,6 +541,9 @@ class HuntingFragment : Fragment() {
                                         binding.tvCreature.text =
                                             "No creature"
 
+                                        binding.tvElementHint.visibility =
+                                            View.GONE
+
                                         binding.progressEnemyHp.progress =
                                             0
 
@@ -565,6 +574,8 @@ class HuntingFragment : Fragment() {
 
                                     binding.progressEnemyHp.progress =
                                         creature.hp
+
+                                    updateElementHint(creature)
                                 }
                         }
 
@@ -808,6 +819,102 @@ class HuntingFragment : Fragment() {
                         }
                     }
             }
+    }
+
+    /*
+     * =========================================================
+     * ELEMENT İPUCU (ZAYIFLIK / DİRENÇ ÖNİZLEMESİ)
+     * =========================================================
+     * Oyuncu saldırmadan ÖNCE, ekipli silahının elementinin bu
+     * yaratığa karşı avantajlı mı, dezavantajlı mı olduğunu görür.
+     * Böylece "doğru silahı seç" gerçek bir karar anına dönüşür.
+     */
+    private fun updateElementHint(
+        creature: Creature
+    ) {
+
+        viewLifecycleOwner.lifecycleScope.launch {
+
+            val equipped =
+                weaponProgressRepository.getEquippedWeapon()
+
+            val weapon =
+                equipped?.let {
+                    WeaponData.getById(it.weaponId)
+                }
+
+            val playerElement =
+                weapon?.element ?: Element.PHYSICAL
+
+            if (_binding == null) return@launch
+
+            val (text, colorRes) =
+                buildElementHint(
+                    playerElement,
+                    creature
+                )
+
+            binding.tvElementHint.text = text
+
+            binding.tvElementHint.setTextColor(
+                androidx.core.content.ContextCompat.getColor(
+                    requireContext(),
+                    colorRes
+                )
+            )
+
+            binding.tvElementHint.visibility =
+                View.VISIBLE
+        }
+    }
+
+    private fun buildElementHint(
+        playerElement: Element,
+        creature: Creature
+    ): Pair<String, Int> {
+
+        val weaponName = elementLabel(playerElement)
+
+        return when {
+
+            creature.weakness == playerElement ->
+                Pair(
+                    "⚡ ZAYIF NOKTA: ${creature.name}, $weaponName hasarına zayıf — bonus hasar!",
+                    com.example.cyberharvest2300.R.color.ch_accent_green
+                )
+
+            creature.resistance == playerElement ->
+                Pair(
+                    "🛡 DİRENÇLİ: ${creature.name}, $weaponName hasarına dirençli — az hasar. Silah değiştir!",
+                    com.example.cyberharvest2300.R.color.ch_accent_yellow
+                )
+
+            else -> {
+
+                val weaknessText =
+                    creature.weakness
+                        ?.let { "Zayıflığı: ${elementLabel(it)}. " }
+                        ?: ""
+
+                Pair(
+                    "${weaknessText}Silahın: $weaponName (nötr)",
+                    com.example.cyberharvest2300.R.color.ch_text_secondary
+                )
+            }
+        }
+    }
+
+    private fun elementLabel(
+        element: Element
+    ): String {
+
+        return when (element) {
+            Element.PHYSICAL -> "Fiziksel"
+            Element.TOXIC -> "Toksik"
+            Element.THERMAL -> "Termal"
+            Element.ELECTRIC -> "Elektrik"
+            Element.CRYO -> "Kriyo"
+        }
     }
 
     /*
