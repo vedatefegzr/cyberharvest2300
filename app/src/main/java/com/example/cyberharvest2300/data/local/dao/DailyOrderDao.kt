@@ -43,6 +43,20 @@ interface DailyOrderDao {
     ): DailyOrder?
 
     @Query("""
+        SELECT * FROM daily_orders
+        WHERE day < :day
+        AND isCompleted = 0
+    """)
+    suspend fun getExpiredOrders(
+        day: Int
+    ): List<DailyOrder>
+
+    @Query("DELETE FROM daily_orders WHERE id = :id")
+    suspend fun deleteOrder(
+        id: Long
+    )
+
+    @Query("""
         DELETE FROM daily_orders
         WHERE day = :day
     """)

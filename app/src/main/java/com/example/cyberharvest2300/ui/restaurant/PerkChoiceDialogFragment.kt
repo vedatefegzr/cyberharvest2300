@@ -5,10 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.Button
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import com.example.cyberharvest2300.R
 import com.example.cyberharvest2300.databinding.FragmentPerkChoiceDialogBinding
 import com.example.cyberharvest2300.domain.restaurant.RestaurantPerk
+import com.example.cyberharvest2300.domain.restaurant.RestaurantPerks
 
 /*
  * =========================================================
@@ -18,14 +20,14 @@ import com.example.cyberharvest2300.domain.restaurant.RestaurantPerk
  * bunu gösterir. isCancelable = false: oyuncu bir seçim yapmadan
  * dialog'u kapatamaz (dışarı tıklayarak ya da geri tuşuyla).
  *
- * Perk listesi ve seçim callback'i dışarıdan (RestaurantFragment)
- * enjekte edilir, böylece bu dialog ViewModel'e doğrudan bağımlı
- * olmaz - test etmesi ve tekrar kullanması kolaylaşır.
+ * Parametresiz constructor kullanılır (ekran döndürme / process death
+ * sonrası sistem fragment'i yeniden oluşturabilsin diye). Seçim,
+ * Fragment Result API ile RestaurantFragment'a iletilir.
  */
-class PerkChoiceDialogFragment(
-    private val perks: List<RestaurantPerk>,
-    private val onPerkChosen: (perkId: String) -> Unit
-) : DialogFragment() {
+class PerkChoiceDialogFragment : DialogFragment() {
+
+    private val perks: List<RestaurantPerk>
+        get() = RestaurantPerks.all
 
     private var _binding: FragmentPerkChoiceDialogBinding? = null
     private val binding get() = _binding!!
@@ -89,7 +91,10 @@ class PerkChoiceDialogFragment(
 
             button.setOnClickListener {
 
-                onPerkChosen(perk.id)
+                parentFragmentManager.setFragmentResult(
+                    RESULT_KEY,
+                    bundleOf(KEY_PERK_ID to perk.id)
+                )
 
                 dismiss()
             }
@@ -115,5 +120,10 @@ class PerkChoiceDialogFragment(
 
     init {
         isCancelable = false
+    }
+
+    companion object {
+        const val RESULT_KEY = "perk_choice_result"
+        const val KEY_PERK_ID = "perk_id"
     }
 }

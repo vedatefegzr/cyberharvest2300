@@ -4,7 +4,6 @@ import com.example.cyberharvest2300.data.local.dao.InventoryDao
 import com.example.cyberharvest2300.data.local.dao.PlayerProfileDao
 import com.example.cyberharvest2300.data.local.entity.InventoryItem
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 
 class InventoryRepository(
     private val inventoryDao: InventoryDao,
@@ -208,6 +207,24 @@ class InventoryRepository(
         return true
     }
 
+    /*
+     * Süresi geçen siparişe ayrılmış (secured) yemeği
+     * normal envantere geri verir.
+     */
+    suspend fun releaseSecuredItem(
+        itemId: String,
+        quantity: Int
+    ): Boolean {
+
+        if (!consumeSecuredItem(itemId, quantity)) {
+            return false
+        }
+
+        addItem(itemId, quantity)
+
+        return true
+    }
+
     suspend fun sellOneItem(
         inventoryItemId: Long,
         sellValue: Int
@@ -231,27 +248,23 @@ class InventoryRepository(
             return false
         }
 
-        val player =
-            playerProfileDao
-                .getPlayerProfile()
-                .first()
-                ?: return false
-
-        inventoryDao.decreaseNormalItem(
-            id = item.id,
-            quantity = 1
-        )
+        // Atomik satış: stok düşümü başarısızsa (0 satır etkilendi)
+        // para eklenmez; para da tek SQL ile artırılır, böylece
+        // eski profil kopyasıyla üzerine yazma yarışı oluşmaz.
+        if (
+            inventoryDao.decreaseNormalItem(
+                id = item.id,
+                quantity = 1
+            ) == 0
+        ) {
+            return false
+        }
 
         if (item.quantity == 1) {
             inventoryDao.deleteItemById(item.id)
         }
 
-        playerProfileDao.insertPlayerProfile(
-            player.copy(
-                money =
-                    player.money + sellValue
-            )
-        )
+        playerProfileDao.addMoney(sellValue)
 
         return true
     }

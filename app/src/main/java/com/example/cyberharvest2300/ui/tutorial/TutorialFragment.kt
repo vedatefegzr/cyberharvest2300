@@ -24,6 +24,7 @@ import com.example.cyberharvest2300.domain.hunting.HuntingEngine
 import com.example.cyberharvest2300.domain.loot.LootCalculator
 import com.example.cyberharvest2300.viewmodel.WeaponProgressViewModel
 import com.example.cyberharvest2300.viewmodel.WeaponProgressViewModelFactory
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class TutorialFragment : Fragment() {
@@ -500,6 +501,23 @@ class TutorialFragment : Fragment() {
     }
 
     private fun showDefeat() {
+
+        viewLifecycleOwner.lifecycleScope.launch {
+
+            val profile =
+                playerProfileRepository
+                    .getPlayerProfile()
+                    .first()
+
+            if (profile != null) {
+                playerProfileRepository
+                    .updatePlayerProfile(
+                        profile.copy(
+                            health = profile.maxHealth
+                        )
+                    )
+            }
+        }
 
         binding.tvTitle.text =
             "DEFEAT"

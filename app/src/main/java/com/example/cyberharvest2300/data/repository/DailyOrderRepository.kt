@@ -38,6 +38,18 @@ class DailyOrderRepository(
         dao.clearOrdersForDay(day)
     }
 
+    suspend fun getExpiredOrders(
+        day: Int
+    ): List<DailyOrder> {
+        return dao.getExpiredOrders(day)
+    }
+
+    suspend fun deleteOrder(
+        id: Long
+    ) {
+        dao.deleteOrder(id)
+    }
+
     suspend fun clearAllOrders() {
         dao.clearAllOrders()
     }

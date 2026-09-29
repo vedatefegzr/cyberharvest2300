@@ -305,7 +305,11 @@ class HubFragment : Fragment() {
             if (!isAdded) return@launch
 
             findNavController().navigate(
-                R.id.mainMenuFragment
+                R.id.mainMenuFragment,
+                null,
+                androidx.navigation.navOptions {
+                    popUpTo(R.id.mainMenuFragment) { inclusive = true }
+                }
             )
         }
     }
@@ -320,7 +324,10 @@ class HubFragment : Fragment() {
     private fun clearChildBackStack() {
 
         childFragmentManager
-            .popBackStackImmediate()
+            .popBackStackImmediate(
+                null,
+                androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE
+            )
     }
 
     fun openRestaurant() {

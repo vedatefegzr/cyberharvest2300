@@ -16,6 +16,9 @@ interface PlayerProfileDao {
     @Query("SELECT * FROM player_profile WHERE id = 1")
     fun getPlayerProfile(): Flow<PlayerProfile?>
 
+    @Query("UPDATE player_profile SET money = money + :amount WHERE id = 1")
+    suspend fun addMoney(amount: Int)
+
     @Query("DELETE FROM player_profile")
     suspend fun deletePlayerProfile()
 }

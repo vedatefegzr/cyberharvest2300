@@ -59,7 +59,7 @@ interface InventoryDao {
     suspend fun decreaseNormalItem(
         id: Long,
         quantity: Int
-    )
+    ): Int
 
     @Query("""
         UPDATE inventory_items

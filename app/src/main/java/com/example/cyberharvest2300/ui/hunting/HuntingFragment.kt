@@ -714,7 +714,7 @@ class HuntingFragment : Fragment() {
                                             binding.tvStatus.text =
                                                 if (stillAlive) {
                                                     "You were defeated.\n" +
-                                                            "Your HP has been restored."
+                                                            "Wait for the next day to recover."
                                                 } else {
                                                     "You were defeated."
                                                 }

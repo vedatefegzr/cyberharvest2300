@@ -420,11 +420,14 @@ class HuntingEngine(
                     0
                 }
 
-            val updatedPlayer =
+            // Yenilgi tek başına DEATH game over'ı tetiklemesin diye
+            // evaluate() çağrısında can en az 1 verilir; kaydedilen
+            // gerçek can ise result.playerHp (0 olabilir).
+            val evaluated =
                 GameOverChecker.evaluate(
                     player.copy(
                         health =
-                            result.playerHp,
+                            result.playerHp.coerceAtLeast(1),
                         money =
                             (player.money - moneyPenalty)
                                 .coerceAtLeast(0),
@@ -432,6 +435,12 @@ class HuntingEngine(
                             (player.reputation - reputationPenalty)
                                 .coerceAtLeast(0)
                     )
+                )
+
+            val updatedPlayer =
+                evaluated.copy(
+                    health =
+                        result.playerHp
                 )
 
             playerProfileRepository

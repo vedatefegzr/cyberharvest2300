@@ -186,6 +186,22 @@ class RestaurantEngine(
                 .first()
                 ?: return emptyList()
 
+        // Önceki günlerden kalan, servis edilmemiş siparişlerin
+        // ayrılmış yemeğini envantere geri ver ve siparişi sil.
+        dailyOrderRepository
+            .getExpiredOrders(player.day)
+            .forEach { old ->
+
+                RecipeData.getById(old.recipeId)?.let { recipe ->
+                    inventoryRepository.releaseSecuredItem(
+                        itemId = recipe.resultItemId,
+                        quantity = recipe.resultQuantity
+                    )
+                }
+
+                dailyOrderRepository.deleteOrder(old.id)
+            }
+
         val orders =
             dailyOrderRepository
                 .getOrdersForDay(player.day)
@@ -565,7 +581,7 @@ class RestaurantEngine(
         val discountPercent =
             activePerks
                 .sumOf { it.priceDiscountPercent }
-                .coerceAtMost(70) // aşırı indirim yığılmasını sınırla
+                .coerceAtMost(30) // 30'da alış fiyatı satışın hep üstünde kalır
 
         val basePrice =
             item.sellValue * BUY_PRICE_MULTIPLIER
@@ -588,17 +604,13 @@ class RestaurantEngine(
             )
         }
 
-        val updatedPlayer =
-            GameOverChecker.evaluate(
+        // Alışveriş game over sebebi olmamalı; evaluate çağrılmaz.
+        playerProfileRepository
+            .updatePlayerProfile(
                 player.copy(
                     money =
                         player.money - totalCost
                 )
-            )
-
-        playerProfileRepository
-            .updatePlayerProfile(
-                updatedPlayer
             )
 
         inventoryRepository.addItem(

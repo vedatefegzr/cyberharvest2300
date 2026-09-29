@@ -140,6 +140,7 @@ class RestaurantViewModel(
 
                     if (profile != null) {
                         loadOrders()
+                        loadRecipes()
                     }
                 }
         }

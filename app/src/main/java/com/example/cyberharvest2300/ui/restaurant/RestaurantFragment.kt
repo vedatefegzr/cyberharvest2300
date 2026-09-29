@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.cyberharvest2300.data.game.ItemData
 import com.example.cyberharvest2300.data.game.ItemType
 import com.example.cyberharvest2300.data.game.Recipe
+import com.example.cyberharvest2300.data.game.RecipeData
 import com.example.cyberharvest2300.data.game.RestaurantData
 import com.example.cyberharvest2300.data.game.RestaurantOrder
 import com.example.cyberharvest2300.data.local.AppDatabase
@@ -68,7 +69,19 @@ class RestaurantFragment : Fragment() {
         setupRecipeRecyclerView()
         setupOrderRecyclerView()
         setupButtons()
+        setupPerkResultListener()
         observeViewModel()
+    }
+
+    private fun setupPerkResultListener() {
+        childFragmentManager.setFragmentResultListener(
+            PerkChoiceDialogFragment.RESULT_KEY,
+            viewLifecycleOwner
+        ) { _, bundle ->
+            bundle.getString(PerkChoiceDialogFragment.KEY_PERK_ID)?.let {
+                viewModel.choosePerk(it)
+            }
+        }
     }
 
     private fun setupViewModel() {
@@ -254,12 +267,7 @@ class RestaurantFragment : Fragment() {
 
         perkDialogShown = true
 
-        val dialog = PerkChoiceDialogFragment(
-            perks = viewModel.availablePerks,
-            onPerkChosen = { perkId ->
-                viewModel.choosePerk(perkId)
-            }
-        )
+        val dialog = PerkChoiceDialogFragment()
 
         dialog.show(childFragmentManager, PERK_DIALOG_TAG)
     }
@@ -404,7 +412,7 @@ class RestaurantFragment : Fragment() {
         val items = orders.map { order ->
 
             val customer = RestaurantData.getCustomer(order.customerId)
-            val recipe = viewModel.getRecipe(order.recipeId)
+            val recipe = RecipeData.getById(order.recipeId)
 
             OrderCardUiModel(
                 order = order,
